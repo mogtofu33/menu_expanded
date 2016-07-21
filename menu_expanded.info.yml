@@ -1,0 +1,7 @@
+name: Menu Expanded
+type: module
+description: Menu Expanded restores the expanded checkboxes on the menu link list pages, enabling you to quickly set a menu item to expanded without entering the edit link for each menu item.
+core: 8.x
+package: Administration
+dependencies:
+  - menu_ui

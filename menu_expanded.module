@@ -1,0 +1,101 @@
+<?php
+
+/**
+ * @file
+ * Contains menu_expanded.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Render\Element;
+
+/**
+ * Implements hook_help().
+ */
+function menu_expanded_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the menu_expanded module.
+    case 'help.page.menu_expanded':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Menu Expanded restores the expanded checkboxes on the menu link list pages, enabling you to quickly set a menu item to expanded without entering the edit link for each menu item.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for the menu_edit_form() form.
+ */
+function menu_expanded_form_menu_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Get existing headers.
+  $headers = $form['links']['links']['#header'];
+  // Build our expanded checkbox element.
+  $expanded = [
+    'data' => new TranslatableMarkup('Expanded'),
+    'class' => array('checkbox'),
+  ];
+  // Add it after enabled, we need the position of enabled header.
+  $pos = NULL;
+  foreach ($form['links']['links']['#header'] as $k => $header) {
+    if (is_array($header) && isset($header['class'])) {
+      // We only got the string as needle...
+      if ($header['data']->getUntranslatedString() == 'Enabled') {
+        $pos = $k + 1;
+      }
+    }
+  }
+  if ($pos) {
+    array_splice($form['links']['links']['#header'], $pos, 0, [$expanded]);
+  }
+  else {
+    $form['links']['links']['#header'][] = $expanded;
+  }
+
+  // Add expanded checkbox on each menu.
+  foreach (Element::children($form['links']['links']) as $id) {
+    if (isset($form['links']['links'][$id]['#item'])) {
+      $element = $form['links']['links'][$id]['#item']->link;
+      $expanded_element = [
+        '#type' => 'checkbox',
+        '#title' => new TranslatableMarkup('Expand @title menu link', array('@title' => $element->getTitle())),
+        '#title_display' => 'invisible',
+        '#default_value' => $element->isExpanded(),
+        '#wrapper_attributes' => ['class' => ['checkbox', 'menu-expanded']],
+      ];
+      // Find the enabled position to add expanded after.
+      if ($pos = array_search('enabled', array_keys($form['links']['links'][$id]))) {
+        $form['links']['links'][$id] = array_merge(
+          array_slice($form['links']['links'][$id], 0, $pos + 1),
+          ['expanded' => $expanded_element],
+          array_slice($form['links']['links'][$id], $pos + 1)
+        );
+      }
+      else {
+        $form['links']['links'][$id]['expanded'] = $expanded_element;
+      }
+    }
+  }
+
+  // Add our submit handler.
+  $form['actions']['submit']['#submit'][] = 'menu_expanded_menu_edit_form_submit';
+}
+
+/**
+ * Submit handler for the menu_edit_form() form to managed expanded option.
+ */
+function menu_expanded_menu_edit_form_submit(array $form, FormStateInterface $form_state) {
+  // Get values submitted by this form.
+  $values = $form_state->getValues();
+
+  // Save new value expanded if changed.
+  $menu_handler = \Drupal::service('plugin.manager.menu.link');
+  foreach ($values['links'] as $k => $value) {
+    if ($value['expanded'] != $form['links']['links'][$k]['expanded']['#default_value']) {
+      $id = str_replace('menu_plugin_id:', '', $k);
+      $menu_handler->updateDefinition($id, ['expanded' => $value['expanded']]);
+    }
+  }
+}

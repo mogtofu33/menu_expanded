@@ -1,0 +1,14 @@
+{
+  "name": "drupal/menu_expanded",
+  "type": "drupal-module",
+  "description": "Menu Expanded restores the expanded checkboxes on the menu link list pages, enabling you to quickly set a menu item to expanded without entering the edit link for each menu item.",
+  "keywords": ["Drupal"],
+  "license": "GPL-2.0+",
+  "homepage": "https://www.drupal.org/project/menu_expanded",
+  "minimum-stability": "dev",
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/menu_expanded",
+    "source": "http://cgit.drupalcode.org/menu_expanded"
+  },
+  "require": { }
+}
