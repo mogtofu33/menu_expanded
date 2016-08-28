@@ -7,7 +7,6 @@
 
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Render\Element;
 
 /**
@@ -34,7 +33,7 @@ function menu_expanded_form_menu_edit_form_alter(&$form, FormStateInterface $for
   $headers = $form['links']['links']['#header'];
   // Build our expanded checkbox element.
   $expanded = [
-    'data' => new TranslatableMarkup('Expanded'),
+    'data' => t('Expanded'),
     'class' => array('checkbox'),
   ];
   // Add it after enabled, we need the position of enabled header.
@@ -60,7 +59,7 @@ function menu_expanded_form_menu_edit_form_alter(&$form, FormStateInterface $for
       $element = $form['links']['links'][$id]['#item']->link;
       $expanded_element = [
         '#type' => 'checkbox',
-        '#title' => new TranslatableMarkup('Expand @title menu link', array('@title' => $element->getTitle())),
+        '#title' => t('Expand @title menu link', array('@title' => $element->getTitle())),
         '#title_display' => 'invisible',
         '#default_value' => $element->isExpanded(),
         '#wrapper_attributes' => ['class' => ['checkbox', 'menu-expanded']],
